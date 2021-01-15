@@ -1,0 +1,53 @@
+-- Jared Day
+--10/20/2017
+
+-- lab 8a.
+
+-- This design is the universal counter described in Table 4.1 Chu Ch4 page 82. This will have a generic
+-- set to 8 bits. A min and max tick output. synch. load input. asynch reset. 
+
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
+
+
+ENTITY univ_counter1 IS
+GENERIC (N: integer := 8)													-- value for # of bit counter
+PORT(
+		i_clk, i_reset	: IN std_logic;									-- clk and reset inputs	
+		i_load			: IN std_logic_vector (N-1 DOWNTO 0);		-- input load value
+		o_maxtick		: OUT std_logic;									-- output max flag
+		o_mintick		: OUT std_logic;									-- output min flag
+		o_Q				: OUT std_logic_vector(N-1 DOWNTO 0));		-- outputs from reg.
+END univ_counter1;
+
+
+ARCHITECTURE ckt of univ_counter1 IS
+SIGNAL r_reg	: unsigned(N-1 DOWNTO 0);								-- register held state
+SIGNAL r_next	: unsigned(N-1 DOWNTO 0);								-- register held next state
+
+BEGIN
+	PROCESS(clk, reset, i_load)											-- sensitivity list
+	BEGIN	
+		IF (reset = '1') THEN
+			r_reg <= (OTHERS => '0');										-- asycnh reset clears everything
+		ELSIF (clk'EVENT and clk = '1') THEN
+			r_reg <= r_next;													-- otherwise put the next state on the r_reg
+		END IF;
+	END PROCESS;
+	
+	-- next state
+	r_next <= r_reg + 1;
+	
+	-- output logic
+	o_Q <= std_logic_vector(r_reg);
+	
+	
+	-- max and min tick
+	o_maxtick <= '1' WHEN r_reg <= (2**N - 1) ELSE '0';
+	o_mintick <= '0' WHEN r_reg <= (0) ELSE '0';
+END ckt;
+	
+	
+		
+		
